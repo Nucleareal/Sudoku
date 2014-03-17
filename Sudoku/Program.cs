@@ -21,7 +21,12 @@ namespace Sudoku
             while (!board.Accept)
             {
                 board.SolveOnce();
-                board.PutSolution(string.Format("step {0}:", board.Step));
+                //board.PutSolution(string.Format("step {0}:", board.Step));
+
+                if (board.Step % 10000 == 0)
+                {
+                    board.PutSolution(string.Format("Step {0}", board.Step));
+                }
 
                 //System.Threading.Thread.Sleep(500);
             }

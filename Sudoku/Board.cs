@@ -60,7 +60,7 @@ namespace Sudoku
             var e = new List<int[]>();
 
             //横ラインのサーチ
-            for (int i = 1; i <= 9; i++)
+            for (int i = 0; i < 9; i++)
             {
                 if (i == x) continue;
                 e.Add(new int[] { i, y });
@@ -74,7 +74,7 @@ namespace Sudoku
             var e = new List<int[]>();
 
             //縦ラインのサーチ
-            for (int i = 1; i <= 9; i++)
+            for (int i = 0; i < 9; i++)
             {
                 if (i == y) continue;
                 e.Add(new int[] { x, i });
@@ -154,6 +154,8 @@ namespace Sudoku
                     k.RemoveAble(this, abint);
                 }
                 n.DetermineNumber = -30000;
+                _board[n.X, n.Y] = n;
+                requeue();
             }
             else
                 if (n.Priority > 10000)
@@ -161,34 +163,26 @@ namespace Sudoku
                     Solved = true;
                 }
                 else
-                    if (true)
+                    if (ByOtherDetermineChanged)
                     {
                         bool postflag = false;
                         for (int i = 0; i < 9; i++)
                             for (int j = 0; j < 9; j++)
                             {
-                                Console.WriteLine("{0}, {1}", i, j);
-                                Console.WriteLine("Solve1");
-                                postflag |= (SolveMiddleClass(i, j, 0));
-                                Console.WriteLine("Solve2");
-                                postflag |= (SolveMiddleClass(i, j, 1));
-                                Console.WriteLine("Solve3");
-                                postflag |= (SolveMiddleClass(i, j, 2));
-                                Console.WriteLine("Solved");
+                                postflag |= (SolveMiddleClass(i, j, GetHorizonalPositions(i, j)));
+                                postflag |= (SolveMiddleClass(i, j, GetVerticalPositions(i, j)));
+                                postflag |= (SolveMiddleClass(i, j, GetBoxPositions(i, j)));
                             }
                         ByOtherDetermineChanged = postflag;
                     }
-            _board[n.X, n.Y] = n;
-            requeue();
             Step++;
         }
 
-        public bool SolveMiddleClass(int i, int j, int d)
+        public bool SolveMiddleClass(int i, int j, List<int[]> list)
         {
-            var pl = d == 0 ? GetHorizonalPositions(i, j) : d == 1 ? GetVerticalPositions(i, j) : GetBoxPositions(i, j);
-            //Console.WriteLine("({0}, {1})", i, j);
-            var l = _board[i, j].AvailableNumbers;
-            foreach (var val in l)
+            var pl = list;
+            var an = _board[i, j].AvailableNumbers;
+            foreach (var val in an)
             {
                 bool isDetermine = true;
                 foreach (var pos in pl)
@@ -201,10 +195,10 @@ namespace Sudoku
                 }
                 if (isDetermine)
                 {
-                    //Console.WriteLine("({0}, {1}) => {2}", i, j, val);
-
-                    _board[i, j].DetermineNumber = val;
+                    //_board[i, j].DetermineNumber = val;
                     _board[i, j].RemoveOther(val);
+                    _board[i, j].DetermineNumber = -30000;
+                    //Console.WriteLine("({0}, {1}) が{2}に確定したよ～", i, j, val);
                     return true;
                 }
             }
@@ -230,6 +224,19 @@ namespace Sudoku
                 for (int j = 0; j < 9; j++)
                 {
                     Console.Write(_board[i, j]);
+                    
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("Available Counts:");
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    Console.Write(string.Format("[{0}]", _board[i, j].AvailableNumbers.Count));
+
                 }
                 Console.WriteLine();
             }
